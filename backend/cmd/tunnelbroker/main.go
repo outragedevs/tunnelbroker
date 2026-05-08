@@ -1,0 +1,113 @@
+package main
+
+import (
+	"log"
+	"net"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"github.com/kofany/tunnelbroker/internal/config"
+	"github.com/kofany/tunnelbroker/internal/db"
+	"github.com/kofany/tunnelbroker/internal/middleware"
+	"github.com/kofany/tunnelbroker/internal/tunnels"
+)
+
+func allowedCORSOrigins() []string {
+	if env := os.Getenv("CORS_ALLOWED_ORIGINS"); env != "" {
+		parts := strings.Split(env, ",")
+		out := make([]string, 0, len(parts))
+		for _, p := range parts {
+			if trimmed := strings.TrimSpace(p); trimmed != "" {
+				out = append(out, trimmed)
+			}
+		}
+		if len(out) > 0 {
+			return out
+		}
+	}
+	return []string{"http://localhost:3000"}
+}
+
+func isLoopbackListenAddress(listenAddr string) bool {
+	host, _, err := net.SplitHostPort(listenAddr)
+	if err != nil {
+		return false
+	}
+
+	if host == "localhost" {
+		return true
+	}
+
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
+}
+
+func main() {
+	// Load environment variables from .env
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment settings")
+	}
+
+	// Load configuration
+	configPath := os.Getenv("CONFIG_PATH")
+	if configPath == "" {
+		configPath = "cmd/config/config.yaml"
+	}
+	if err := config.LoadConfig(configPath); err != nil {
+		log.Fatalf("Error loading configuration: %v", err)
+	}
+
+	if !isLoopbackListenAddress(config.GlobalConfig.API.Listen) {
+		log.Fatalf("Refusing to start backend on non-loopback listen address %q", config.GlobalConfig.API.Listen)
+	}
+
+	// Initialize WireGuard interface if configured
+	if config.GlobalConfig.WireGuard.Interface != "" {
+		if err := config.InitWireGuardInterface(); err != nil {
+			log.Printf("Warning: Could not initialize WireGuard interface: %v", err)
+			// Don't fail, WireGuard might not be available on development machine
+		} else {
+			log.Printf("WireGuard interface %s initialized", config.GlobalConfig.WireGuard.Interface)
+		}
+	}
+
+	// Initialize database connection
+	if err := db.InitDB(); err != nil {
+		log.Fatalf("Error connecting to database: %v", err)
+	}
+	defer db.CloseDB()
+
+	// Initialize Gin router
+	router := gin.Default()
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     allowedCORSOrigins(),
+		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "X-API-Key"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
+	// Register API endpoints
+	api := router.Group("/api/v1")
+	api.Use(middleware.APIKeyAuth())
+	{
+		// Tunnel endpoints
+		api.GET("/tunnels", tunnels.GetTunnelsHandler)                     // List all tunnels or user tunnels
+		api.GET("/tunnels/user/:user_id", tunnels.GetUserTunnelsHandler)   // List tunnels for specific user
+		api.GET("/tunnels/:tunnel_id", tunnels.GetTunnelHandler)           // Get specific tunnel details
+		api.POST("/tunnels", tunnels.CreateTunnelHandler)                  // Create new tunnel
+		api.PATCH("/tunnels/:tunnel_id/ip", tunnels.UpdateClientIPHandler) // Update client IP
+		api.DELETE("/tunnels/:tunnel_id", tunnels.DeleteTunnelHandler)     // Delete tunnel
+	}
+
+	// Listen only on localhost with port from configuration
+	log.Printf("Server started on %s", config.GlobalConfig.API.Listen)
+	if err := router.Run(config.GlobalConfig.API.Listen); err != nil {
+		log.Fatalf("Error starting server: %v", err)
+	}
+}

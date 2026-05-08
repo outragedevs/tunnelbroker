@@ -16,9 +16,9 @@
 # Local env file
 .env
 
-# Binaries and logs
-tunnelbroker
-tunnelrecovery
+# Compiled binaries (anchored to backend root, do not match cmd/ subdirs)
+/tunnelbroker
+/tunnelrecovery
 *.log
 *.db
 
