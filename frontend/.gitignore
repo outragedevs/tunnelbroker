@@ -1,0 +1,8 @@
+# Frontend-specific ignore rules. Shared rules live in the monorepo root `.gitignore`.
+
+.env
+.env.local
+.env*.local
+envback
+*.tsbuildinfo
+next-env.d.ts

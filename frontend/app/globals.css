@@ -1,0 +1,129 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Light theme — refined cappuccino DNA */
+  --background: #faf8f4;
+  --foreground: #1d1714;
+  --card: #fdfbf8;
+  --card-foreground: #1d1714;
+  --popover: #fdfbf8;
+  --popover-foreground: #1d1714;
+  --primary: #b45309;          /* amber-700 — accent on light bg */
+  --primary-foreground: #faf8f4;
+  --secondary: #f3eee5;
+  --secondary-foreground: #1d1714;
+  --muted: #f3eee5;
+  --muted-foreground: #5b4a36;
+  --accent: #f3eee5;            /* shadcn "accent" = hover surface */
+  --accent-foreground: #1d1714;
+  --destructive: #b91c1c;
+  --destructive-foreground: #faf8f4;
+  --border: #e8e1d3;
+  --input: #e8e1d3;
+  --ring: #b45309;
+
+  /* Extended tokens for the homepage */
+  --success: #15803d;
+  --border-strong: #cfc4ad;
+  --fg-subtle: #8a7960;
+  --primary-soft: rgb(180 83 9 / 0.08);
+
+  --radius: 0.5rem;
+}
+
+.dark {
+  /* Dark theme — dev-tool */
+  --background: #0b0d10;
+  --foreground: #e6edf3;
+  --card: #0e1116;
+  --card-foreground: #e6edf3;
+  --popover: #0e1116;
+  --popover-foreground: #e6edf3;
+  --primary: #f59e0b;          /* amber-500 — accent on dark bg */
+  --primary-foreground: #0b0d10;
+  --secondary: #161b22;
+  --secondary-foreground: #e6edf3;
+  --muted: #161b22;
+  --muted-foreground: #7d8590;
+  --accent: #161b22;
+  --accent-foreground: #e6edf3;
+  --destructive: #ff7b72;
+  --destructive-foreground: #0b0d10;
+  --border: #1f2428;
+  --input: #1f2428;
+  --ring: #f59e0b;
+
+  --success: #7ee787;
+  --border-strong: #30363d;
+  --fg-subtle: #484f58;
+  --primary-soft: rgb(245 158 11 / 0.08);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-success: var(--success);
+  --color-border-strong: var(--border-strong);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-primary-soft: var(--primary-soft);
+
+  --radius: var(--radius);
+
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular",
+    "Menlo", "Consolas", monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    color-scheme: light dark;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01" on, "cv11" on;
+  }
+
+  ::selection {
+    background-color: var(--color-primary-soft);
+    color: var(--color-foreground);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

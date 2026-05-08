@@ -1,0 +1,37 @@
+# Backend-specific ignore rules. Shared rules live in the monorepo root `.gitignore`.
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Local env file
+.env
+
+# Binaries and logs
+tunnelbroker
+tunnelrecovery
+*.log
+*.db
+
+# Config files with sensitive data
+config.yaml
+cmd/config/config.yaml
+
+# Build artifacts
+/dist/
+/build/
+/tmp
+/tunnelbroker
+
+# Documentation with sensitive data
+docs/api.md
+updated_config.yaml
